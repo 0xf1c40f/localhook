@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>localhook - Roblox Executors</title>
+    <title>localhook - executors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -41,6 +41,15 @@
             .error-card {
                 @apply bg-red-900/20 border border-red-500;
             }
+            .dropdown-enter {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            .dropdown-enter-active {
+                transform: scale(1);
+                opacity: 1;
+                transition: all 0.2s ease-out;
+            }
         }
     </style>
 </head>
@@ -51,7 +60,7 @@
                 <i data-lucide="download" class="w-8 h-8 text-neon-green mr-3"></i>
                 <h1 class="text-4xl font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">localhook</h1>
             </div>
-            <p class="text-gray-400 max-w-2xl mx-auto">#1 Best executor list websites for Android.</p>
+            <p class="text-gray-400 max-w-2xl mx-auto">#1 Best executors list website for Android.</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" id="container">
@@ -64,19 +73,22 @@
                 name: "Delta",
                 url: "https://delta.filenetwork.vip/get_files.php",
                 logo: "https://deltaexploits.gg/assets/favicon.ico",
-                color: "green"
+                color: "green",
+                download_base: "https://delta.filenetwork.vip/file/"
             },
             {
                 name: "Krnl",
                 url: "https://filenetwork.vip/get_files.php",
                 logo: "https://krnl.cat/assets/Krnl_Logo.svg",
-                color: "purple"
+                color: "purple",
+                download_base: "https://filenetwork.vip/file/",
+                has_dropdown: true
             }
         ];
 
         const container = document.getElementById('container');
-        
-        //haha this is shit
+        let krnl_data = null;
+
         async function get_data(executor) {
             try {
                 const res = await fetch(executor.url, {
@@ -92,15 +104,23 @@
                 return data;
             } catch (err) {
                 console.error(`Error fetching ${executor.name} data:`, err);
-                return { error: true, msg: `Gagal mengambil data: ${err.message}` };
+                return { error: true, msg: `data error: ${err.message}` };
             }
         }
 
-        function get_latest(data) {
-            if (data.latest_apk && data.latest_apk.length > 0) {
-                return data.latest_apk[0];
-            } else if (data.latest_ipa && data.latest_ipa.length > 0) {
-                return data.latest_ipa[0];
+        function get_latest(data, type = 'normal') {
+            if (type === 'vng') {
+                if (data.latest_apk_vng && data.latest_apk_vng.length > 0) {
+                    return data.latest_apk_vng[0];
+                } else if (data.latest_ipa_vng && data.latest_ipa_vng.length > 0) {
+                    return data.latest_ipa_vng[0];
+                }
+            } else {
+                if (data.latest_apk && data.latest_apk.length > 0) {
+                    return data.latest_apk[0];
+                } else if (data.latest_ipa && data.latest_ipa.length > 0) {
+                    return data.latest_ipa[0];
+                }
             }
             return null;
         }
@@ -127,26 +147,58 @@
                         </div>
                         <button class="w-full py-3 bg-white text-gray-800 font-medium rounded-lg transition duration-200 cursor-not-allowed opacity-70 flex items-center justify-center" disabled>
                             <i data-lucide="x-circle" class="w-5 h-5 mr-2"></i>
-                            Download Tidak Tersedia
+                            Download is not available
                         </button>
                     </div>
                 </div>
             `;
         }
 
+        function create_custom_dropdown(executor_id, normal_file, vng_file) {
+            if (!normal_file && !vng_file) return '';
+            
+            return `
+                <div class="mb-4 relative">
+                    <button type="button" id="dropdown-btn-${executor_id}" class="w-full flex items-center justify-between bg-dark-700 border border-gray-600 text-white rounded-lg px-3 py-2 hover:bg-dark-600 transition duration-200">
+                        <span class="flex items-center">
+                            <i data-lucide="package" class="w-4 h-4 mr-2"></i>
+                            <span id="selected-version-${executor_id}">Normal</span>
+                        </span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <div id="dropdown-menu-${executor_id}" class="hidden absolute top-full left-0 right-0 mt-1 bg-dark-700 border border-gray-600 rounded-lg shadow-lg z-10 overflow-hidden">
+                        ${normal_file ? `
+                            <button type="button" class="version-option w-full text-left px-3 py-2 hover:bg-dark-600 transition duration-200 flex items-center" data-version="normal" data-file='${JSON.stringify(normal_file)}'>
+                                <i data-lucide="smartphone" class="w-4 h-4 mr-2 text-neon-blue"></i>
+                                Normal
+                            </button>
+                        ` : ''}
+                        ${vng_file ? `
+                            <button type="button" class="version-option w-full text-left px-3 py-2 hover:bg-dark-600 transition duration-200 flex items-center" data-version="vng" data-file='${JSON.stringify(vng_file)}'>
+                                <i data-lucide="globe" class="w-4 h-4 mr-2 text-neon-purple"></i>
+                                VNG
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
         function create_card(executor, data) {
-            const file = get_latest(data);
-            
-            let color_class = '';
-            let gradient_class = '';
-            
-            if (executor.color === 'green') {
-                color_class = 'from-neon-green to-neon-blue';
-                gradient_class = 'from-neon-green to-neon-blue';
-            } else {
-                color_class = 'from-neon-blue to-neon-purple';
-                gradient_class = 'from-neon-blue to-neon-purple';
+            if (executor.has_dropdown) {
+                krnl_data = data;
             }
+            
+            const normal_file = get_latest(data, 'normal');
+            const vng_file = get_latest(data, 'vng');
+            const default_file = normal_file || vng_file;
+            
+            const gradient_class = executor.color === 'green' ? 'from-neon-green to-neon-blue' : 'from-neon-blue to-neon-purple';
+            
+            const file_to_show = default_file || {};
+            const download_url = default_file ? `${executor.download_base}${encodeURIComponent(file_to_show.name)}` : '#';
+            
+            const card_id = executor.name.toLowerCase().replace(/\s+/g, '-');
             
             return `
                 <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border border-dark-700 hover:border-dark-600">
@@ -157,28 +209,30 @@
                             <h2 class="text-xl font-semibold text-white">${executor.name}</h2>
                         </div>
                         
-                        ${file ? `
+                        ${executor.has_dropdown ? create_custom_dropdown(card_id, normal_file, vng_file) : ''}
+                        
+                        ${default_file ? `
                             <div class="mb-6 space-y-3">
                                 <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
                                     <div class="flex items-center text-gray-400">
                                         <i data-lucide="file" class="w-4 h-4 mr-2"></i>
                                         <span>File:</span>
                                     </div>
-                                    <span class="text-white font-medium truncate ml-2 max-w-[150px]">${file.name || 'Unknown'}</span>
+                                    <span id="file-name-${card_id}" class="text-white font-medium truncate ml-2 max-w-[150px]">${file_to_show.name || 'Unknown'}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
                                     <div class="flex items-center text-gray-400">
                                         <i data-lucide="hard-drive" class="w-4 h-4 mr-2"></i>
                                         <span>Size:</span>
                                     </div>
-                                    <span class="text-white font-medium">${format_size(file.size)}</span>
+                                    <span id="file-size-${card_id}" class="text-white font-medium">${format_size(file_to_show.size)}</span>
                                 </div>
                                 <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
                                     <div class="flex items-center text-gray-400">
                                         <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
                                         <span>Update:</span>
                                     </div>
-                                    <span class="text-white font-medium">${file.last_modified}</span>
+                                    <span id="file-date-${card_id}" class="text-white font-medium">${file_to_show.last_modified || 'Unknown'}</span>
                                 </div>
                             </div>
                         ` : `
@@ -188,13 +242,60 @@
                             </div>
                         `}
                         
-                        <button class="w-full py-4 bg-white text-gray-800 font-bold rounded-lg hover:bg-gray-200 transition duration-200 shadow-lg flex items-center justify-center">
-                            <i data-lucide="download" class="w-5 h-5 mr-2 text-gray-800"></i>
-                            Download ${executor.name}
-                        </button>
+                        ${default_file ? `
+                            <a id="download-btn-${card_id}" href="${download_url}" class="w-full py-4 bg-white text-gray-800 font-bold rounded-lg hover:bg-gray-200 transition duration-200 shadow-lg flex items-center justify-center">
+                                <i data-lucide="download" class="w-5 h-5 mr-2 text-gray-800"></i>
+                                Download ${executor.name}
+                            </a>
+                        ` : `
+                            <button class="w-full py-4 bg-white text-gray-800 font-bold rounded-lg opacity-70 cursor-not-allowed flex items-center justify-center" disabled>
+                                <i data-lucide="download" class="w-5 h-5 mr-2 text-gray-800"></i>
+                                Download ${executor.name}
+                            </button>
+                        `}
                     </div>
                 </div>
             `;
+        }
+
+        function setup_dropdown_events() {
+            document.querySelectorAll('[id^="dropdown-btn-"]').forEach(btn => {
+                const dropdown_id = btn.id.replace('dropdown-btn-', 'dropdown-menu-');
+                const dropdown_menu = document.getElementById(dropdown_id);
+                
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('[id^="dropdown-menu-"]').forEach(menu => {
+                        if (menu.id !== dropdown_id) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                    dropdown_menu.classList.toggle('hidden');
+                });
+                
+                const card_id = btn.id.replace('dropdown-btn-', '');
+                
+                dropdown_menu.querySelectorAll('.version-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const version = option.getAttribute('data-version');
+                        const file_data = JSON.parse(option.getAttribute('data-file'));
+                        
+                        document.getElementById(`selected-version-${card_id}`).textContent = version.toUpperCase();
+                        document.getElementById(`file-name-${card_id}`).textContent = file_data.name || 'Unknown';
+                        document.getElementById(`file-size-${card_id}`).textContent = format_size(file_data.size);
+                        document.getElementById(`file-date-${card_id}`).textContent = file_data.last_modified || 'Unknown';
+                        document.getElementById(`download-btn-${card_id}`).href = `https://filenetwork.vip/file/${encodeURIComponent(file_data.name)}`;
+                        
+                        dropdown_menu.classList.add('hidden');
+                    });
+                });
+            });
+            
+            document.addEventListener('click', () => {
+                document.querySelectorAll('[id^="dropdown-menu-"]').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            });
         }
 
         async function init() {
@@ -207,12 +308,12 @@
                     container.innerHTML += create_card(executor, data);
                 }
             }
+            
             lucide.createIcons();
+            setup_dropdown_events();
         }
 
         init();
     </script>
 </body>
-
 </html>
-
