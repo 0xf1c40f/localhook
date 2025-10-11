@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Executors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#000000',
+                            800: '#202020',
+                            700: '#404040',
+                        },
+                        neon: {
+                            green: '#00ff9d',
+                            blue: '#00a2ff',
+                            purple: '#b300ff'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-border {
+                background: linear-gradient(90deg, #00ff9d 0%, #00a2ff 50%, #b300ff 100%);
+            }
+            .card-inner {
+                @apply bg-dark-800 p-6 rounded-b-lg;
+            }
+            .error-card {
+                @apply bg-red-900/20 border border-red-500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark-900 text-white font-sans min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <header class="text-center mb-12">
+            <div class="flex items-center justify-center mb-4">
+                <i data-lucide="download" class="w-8 h-8 text-neon-green mr-3"></i>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-neon-green to-neon-blue bg-clip-text text-transparent">localhook</h1>
+            </div>
+            <p class="text-gray-400 max-w-2xl mx-auto">#1 Best executor list websites for Android.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" id="container">
+        </div>
+    </div>
+
+    <script>
+        const executors = [
+            {
+                name: "Delta",
+                url: "https://delta.filenetwork.vip/get_files.php",
+                logo: "https://deltaexploits.gg/assets/favicon.ico",
+                color: "green"
+            },
+            {
+                name: "Krnl",
+                url: "https://filenetwork.vip/get_files.php",
+                logo: "https://krnl.cat/assets/Krnl_Logo.svg",
+                color: "purple"
+            }
+        ];
+
+        const container = document.getElementById('container');
+        
+        //haha this is shit
+        async function get_data(executor) {
+            try {
+                const res = await fetch(executor.url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                return data;
+            } catch (err) {
+                console.error(`Error fetching ${executor.name} data:`, err);
+                return { error: true, msg: `Gagal mengambil data: ${err.message}` };
+            }
+        }
+
+        function get_latest(data) {
+            if (data.latest_apk && data.latest_apk.length > 0) {
+                return data.latest_apk[0];
+            } else if (data.latest_ipa && data.latest_ipa.length > 0) {
+                return data.latest_ipa[0];
+            }
+            return null;
+        }
+
+        function format_size(bytes) {
+            if (!bytes) return 'Unknown';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function error_card(executor, msg) {
+            return `
+                <div class="rounded-lg overflow-hidden error-card">
+                    <div class="h-1 gradient-border"></div>
+                    <div class="card-inner">
+                        <div class="flex items-center mb-4">
+                            <img src="${executor.logo}" alt="${executor.name} Logo" class="w-10 h-10 mr-3 rounded">
+                            <h2 class="text-xl font-semibold text-white">${executor.name}</h2>
+                        </div>
+                        <div class="bg-red-800/30 p-4 rounded-lg mb-6 flex items-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-red-300 mr-2"></i>
+                            <p class="text-red-300">${msg}</p>
+                        </div>
+                        <button class="w-full py-3 bg-white text-gray-800 font-medium rounded-lg transition duration-200 cursor-not-allowed opacity-70 flex items-center justify-center" disabled>
+                            <i data-lucide="x-circle" class="w-5 h-5 mr-2"></i>
+                            Download Tidak Tersedia
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function create_card(executor, data) {
+            const file = get_latest(data);
+            
+            let color_class = '';
+            let gradient_class = '';
+            
+            if (executor.color === 'green') {
+                color_class = 'from-neon-green to-neon-blue';
+                gradient_class = 'from-neon-green to-neon-blue';
+            } else {
+                color_class = 'from-neon-blue to-neon-purple';
+                gradient_class = 'from-neon-blue to-neon-purple';
+            }
+            
+            return `
+                <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border border-dark-700 hover:border-dark-600">
+                    <div class="h-1 gradient-border ${gradient_class}"></div>
+                    <div class="card-inner">
+                        <div class="flex items-center mb-4">
+                            <img src="${executor.logo}" alt="${executor.name} Logo" class="w-10 h-10 mr-3 rounded">
+                            <h2 class="text-xl font-semibold text-white">${executor.name}</h2>
+                        </div>
+                        
+                        ${file ? `
+                            <div class="mb-6 space-y-3">
+                                <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
+                                    <div class="flex items-center text-gray-400">
+                                        <i data-lucide="file" class="w-4 h-4 mr-2"></i>
+                                        <span>File:</span>
+                                    </div>
+                                    <span class="text-white font-medium truncate ml-2 max-w-[150px]">${file.name || 'Unknown'}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
+                                    <div class="flex items-center text-gray-400">
+                                        <i data-lucide="hard-drive" class="w-4 h-4 mr-2"></i>
+                                        <span>Size:</span>
+                                    </div>
+                                    <span class="text-white font-medium">${format_size(file.size)}</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 px-3 bg-dark-700 rounded-lg">
+                                    <div class="flex items-center text-gray-400">
+                                        <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                        <span>Update:</span>
+                                    </div>
+                                    <span class="text-white font-medium">${file.last_modified}</span>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="mb-6 p-4 bg-dark-700 rounded-lg text-center flex items-center justify-center">
+                                <i data-lucide="file-question" class="w-5 h-5 text-gray-400 mr-2"></i>
+                                <p class="text-gray-400">Tidak ada informasi file tersedia</p>
+                            </div>
+                        `}
+                        
+                        <button class="w-full py-4 bg-white text-gray-800 font-bold rounded-lg hover:bg-gray-200 transition duration-200 shadow-lg flex items-center justify-center">
+                            <i data-lucide="download" class="w-5 h-5 mr-2 text-gray-800"></i>
+                            Download ${executor.name}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function init() {
+            for (const executor of executors) {
+                const data = await get_data(executor);
+                
+                if (data.error) {
+                    container.innerHTML += error_card(executor, data.msg);
+                } else {
+                    container.innerHTML += create_card(executor, data);
+                }
+            }
+            lucide.createIcons();
+        }
+
+        init();
+    </script>
+</body>
+</html>
