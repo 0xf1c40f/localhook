@@ -1,4 +1,4 @@
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/0xf1c40f/localhook/refs/heads/main/UnLeaked.txt"))()
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/0xf1c40f/localhook/refs/heads/main/what.lua"))()
 
 
 library.rank = "developer"
