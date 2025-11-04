@@ -3565,8 +3565,9 @@ local a = {
 a['ScreenGui']['Name'] = 'open'
 a['ScreenGui']['Parent'] = game:GetService('Players').LocalPlayer:FindFirstChild('PlayerGui')
 a['ScreenGui']['ResetOnSpawn'] = false
-a['ScreenGui']['ZIndex'] = 676767676767
-a
+a["ScreenGui"]["IgnoreGuiInset"] = true
+a["ScreenGui"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Global
+
 
 a['TextButton']['Position'] = UDim2.new(.5, -20, 0, -60)
 a['TextButton']['Size'] = UDim2.new(0, 50, 0, 50)
@@ -3584,7 +3585,7 @@ a['UICorner']['Name'] = 'openv2'
 a['UICorner']['Parent'] = a['TextButton']
 
 a["TextButton"].MouseButton1Click:Connect(function()
-    game:GetService("CoreGui").screen.Enabled = not game:GetService("CoreGui").screen.Enabled
+game:GetService("CoreGui"):FindFirstChild('screen').Enabled = not game:GetService("CoreGui"):FindFirstChild('screen').Enabled
 end)
 
 return library
