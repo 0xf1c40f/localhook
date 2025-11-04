@@ -3556,11 +3556,14 @@ function library:Init(key)
     return TabLibrary
 end
 
+local guii = game:GetService("CoreGui"):FindFirstChild('screen')
+if not guii return end
 local a = {
 	['ScreenGui'] = Instance.new('ScreenGui'),
 	['TextButton'] = Instance.new('TextButton'),
 	['UICorner'] = Instance.new('UICorner')
 }
+
 
 a['ScreenGui']['Name'] = 'open'
 a['ScreenGui']['Parent'] = game:GetService('Players').LocalPlayer:FindFirstChild('PlayerGui')
@@ -3582,7 +3585,7 @@ a['UICorner']['Name'] = 'openv2'
 a['UICorner']['Parent'] = a['TextButton']
 
 a["TextButton"].MouseButton1Click:Connect(function()
-game:GetService("CoreGui"):FindFirstChild('screen').Enabled = not game:GetService("CoreGui"):FindFirstChild('screen').Enabled
+game:GetService("CoreGui").screen.Enabled = not game:GetService("CoreGui").screen.Enabled
 end)
 
 return library
