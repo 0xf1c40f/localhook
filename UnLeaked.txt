@@ -3564,8 +3564,9 @@ local a = {
 
 a['ScreenGui']['Name'] = 'open'
 a['ScreenGui']['Parent'] = game:GetService('Players').LocalPlayer:FindFirstChild('PlayerGui')
-a.ResetOnSpawn = false
-a.ZIndex = 99999996767
+a['ScreenGui']['ResetOnSpawn'] = false
+a['ScreenGui']['ZIndex'] = 676767676767
+a
 
 a['TextButton']['Position'] = UDim2.new(.5, -20, 0, -60)
 a['TextButton']['Size'] = UDim2.new(0, 50, 0, 50)
