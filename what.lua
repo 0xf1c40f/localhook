@@ -3564,6 +3564,7 @@ local a = {
 
 a['ScreenGui']['Name'] = 'open'
 a['ScreenGui']['Parent'] = game:GetService('Players').LocalPlayer:FindFirstChild('PlayerGui')
+a['ScreenGui']ResetOnSpawn = false
 
 a['TextButton']['Position'] = UDim2.new(.5, -20, 0, -60)
 a['TextButton']['Size'] = UDim2.new(0, 50, 0, 50)
